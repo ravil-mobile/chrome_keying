@@ -19,9 +19,9 @@ public:
         if (padded_width == 0)
             m_padded_width = width;
         
-        m_red = (float*)aligned_alloc(this->alignment, sizeof(float) * this->get_total_area());
-        m_green = (float*)aligned_alloc(this->alignment, sizeof(float) * this->get_total_area());
-        m_blue = (float*)aligned_alloc(this->alignment, sizeof(float) * this->get_total_area());
+        m_red = (float*)aligned_alloc(this->alignment, align(sizeof(float) * this->get_total_area()));
+        m_green = (float*)aligned_alloc(this->alignment, align(sizeof(float) * this->get_total_area()));
+        m_blue = (float*)aligned_alloc(this->alignment, align(sizeof(float) * this->get_total_area()));
 
     }
 
@@ -41,9 +41,9 @@ public:
             if (m_green != nullptr) free(m_green);
             if (m_blue != nullptr) free(m_blue);
 
-            m_red = (float*)aligned_alloc(this->alignment, sizeof(float) * this->get_total_area());
-            m_green = (float*)aligned_alloc(this->alignment, sizeof(float) * this->get_total_area());
-            m_blue = (float*)aligned_alloc(this->alignment, sizeof(float) * this->get_total_area());
+            m_red = (float*)aligned_alloc(this->alignment, align(sizeof(float) * this->get_total_area()));
+            m_green = (float*)aligned_alloc(this->alignment, align(sizeof(float) * this->get_total_area()));
+            m_blue = (float*)aligned_alloc(this->alignment, align(sizeof(float) * this->get_total_area()));
 
             std::memcpy((void*)m_red, other.m_red, this->get_total_area() * sizeof(float));
             std::memcpy((void*)m_green, other.m_green, this->get_total_area() * sizeof(float));
@@ -87,6 +87,10 @@ public:
 
     size_t get_total_area() {
         return m_padded_width * m_height;
+    }
+
+    static size_t align(size_t num_bytes) {
+        return ImageRGB::alignment * ((num_bytes + ImageRGB::alignment - 1) / ImageRGB::alignment);
     }
 
     const static short num_channels = 3;
