@@ -33,10 +33,12 @@ int main(int argc, char *argv[])
     }
 
     // display images
-    display_window(foreground);
-    display_window(background);
+    //display_window(foreground);
+    //display_window(background);
 
     ImageRGB output = apply_default_ck(foreground, background);
+    //ImageRGB output = apply_openmp_ck(foreground, background);
+    //ImageRGB output = apply_simd_intrinsics_ck(foreground, background);
     display_window(output);
 
 	// Terminate GLFW
