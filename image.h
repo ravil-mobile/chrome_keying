@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <cstring>
+#include "alignment.h"
 
 /** TODO: write documentation
  * 
@@ -23,9 +24,9 @@ public:
         m_pad_width = m_width + 2 * m_pad_x;
         m_pad_height = m_height + 2 * m_pad_y;
 
-        m_red = (float*)aligned_alloc(this->alignment, align(sizeof(float) * this->get_real_total_area()));
-        m_green = (float*)aligned_alloc(this->alignment, align(sizeof(float) * this->get_real_total_area()));
-        m_blue = (float*)aligned_alloc(this->alignment, align(sizeof(float) * this->get_real_total_area()));
+        m_red = (float*)aligned_alloc(ALIGNMENT, align(sizeof(float) * this->get_real_total_area()));
+        m_green = (float*)aligned_alloc(ALIGNMENT, align(sizeof(float) * this->get_real_total_area()));
+        m_blue = (float*)aligned_alloc(ALIGNMENT, align(sizeof(float) * this->get_real_total_area()));
 
         memset(m_red, 0, sizeof(float) * this->get_real_total_area());
         memset(m_green, 0, sizeof(float) * this->get_real_total_area());
@@ -33,9 +34,9 @@ public:
 
     }
 
-    ImageRGB(const ImageRGB &other)  : m_red(nullptr), 
-                                       m_green(nullptr), 
-                                       m_blue(nullptr) {
+    ImageRGB(const ImageRGB &other) : m_red(nullptr), 
+                                      m_green(nullptr), 
+                                      m_blue(nullptr) {
         *this = other;        
     }
 
@@ -53,9 +54,9 @@ public:
             if (m_green != nullptr) free(m_green);
             if (m_blue != nullptr) free(m_blue);
 
-            m_red = (float*)aligned_alloc(this->alignment, align(sizeof(float) * this->get_real_total_area()));
-            m_green = (float*)aligned_alloc(this->alignment, align(sizeof(float) * this->get_real_total_area()));
-            m_blue = (float*)aligned_alloc(this->alignment, align(sizeof(float) * this->get_real_total_area()));
+            m_red = (float*)aligned_alloc(ALIGNMENT, align(sizeof(float) * this->get_real_total_area()));
+            m_green = (float*)aligned_alloc(ALIGNMENT, align(sizeof(float) * this->get_real_total_area()));
+            m_blue = (float*)aligned_alloc(ALIGNMENT, align(sizeof(float) * this->get_real_total_area()));
 
             std::memcpy((void*)m_red, other.m_red, this->get_real_total_area() * sizeof(float));
             std::memcpy((void*)m_green, other.m_green, this->get_real_total_area() * sizeof(float));
@@ -66,7 +67,7 @@ public:
 
 
     bool operator==(const ImageRGB& rhs) {
-        if ((m_width == rhs.m_width) &&  (m_height == rhs.m_height)\
+        if ((m_width == rhs.m_width) && (m_height == rhs.m_height) \
                                      && (m_pad_width == rhs.m_pad_width) \
                                      && (m_pad_height == rhs.m_pad_height)) {
             return true;
@@ -102,13 +103,8 @@ public:
     size_t get_total_area() {return m_height * m_width;}
     size_t get_real_total_area() {return m_pad_height * m_pad_width;}
 
-
-    static size_t align(size_t num_bytes) {
-        return ImageRGB::alignment * ((num_bytes + ImageRGB::alignment - 1) / ImageRGB::alignment);
-    }
-
     const static short num_channels = 3;
-    const static size_t alignment = 64; // bytes
+
 
 private:
 
@@ -119,7 +115,6 @@ private:
     size_t m_pad_height;
     size_t m_pad_width;
     
-
     float* m_red;
     float* m_green;
     float* m_blue;

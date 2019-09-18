@@ -17,6 +17,8 @@ void report_error(const char* file, size_t string_number) {
     std::cout << "OCCURED at: " << file << "::" << string_number << std::endl;
 }
 
+CommandLineSettings *CommandLineSettings::m_isntance = nullptr;
+
 /** Read a bmp file and extracts an image
  * 
  * @param path a relative location of an image
