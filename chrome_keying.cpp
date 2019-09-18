@@ -23,7 +23,7 @@ ImageRGB apply_default_ck(ImageRGB &fg, ImageRGB &bg) {
 
     auto start = system_clock::now();
     for (size_t count = 0; count < repeats; ++count) {
-        for (size_t i = 0; i < output.get_total_area(); ++i) {
+        for (size_t i = 0; i < output.get_real_total_area(); ++i) {
             const bool is_green = (fg_channels[GREEN][i] > fg_channels[RED][i])
                                 && (fg_channels[GREEN][i] > fg_channels[BLUE][i]) 
                                 && (fg_channels[GREEN][i] > threshold);
@@ -53,7 +53,7 @@ ImageRGB apply_openmp_ck(ImageRGB &fg, ImageRGB &bg) {
     for (size_t count = 0; count < repeats; ++count) {
 
         #pragma omp simd 
-        for (size_t i = 0; i < output.get_total_area(); ++i) {
+        for (size_t i = 0; i < output.get_real_total_area(); ++i) {
             const bool is_green = (fg_channels[GREEN][i] > fg_channels[RED][i])
                                 && (fg_channels[GREEN][i] > fg_channels[BLUE][i]) 
                                 && (fg_channels[GREEN][i] > threshold);
@@ -86,13 +86,13 @@ ImageRGB apply_simd_intrinsics_ck(ImageRGB &fg, ImageRGB &bg) {
     auto start = system_clock::now();
     __m256 level = _mm256_broadcast_ss(&threshold);
     for (size_t count = 0; count < repeats; ++count) {
-        for (size_t i = 0; i < output.get_total_area(); i += stride) {
+        for (size_t i = 0; i < output.get_real_total_area(); i += stride) {
 
 
             // load data to registers
-            __m256 green = _mm256_load_ps(fg_channels[GREEN] + i);
-            __m256 red = _mm256_load_ps(fg_channels[RED] + i);
-            __m256 blue = _mm256_load_ps(fg_channels[BLUE] + i);
+            __m256 green = _mm256_loadu_ps(fg_channels[GREEN] + i);
+            __m256 red = _mm256_loadu_ps(fg_channels[RED] + i);
+            __m256 blue = _mm256_loadu_ps(fg_channels[BLUE] + i);
 
             //compare colors
             __m256 tmp0 = _mm256_cmp_ps(red, green, _CMP_GT_OQ);

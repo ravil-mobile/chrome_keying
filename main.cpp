@@ -15,12 +15,12 @@ int main(int argc, char *argv[])
 	if( !glfwInit() )
 	{
 		std::cout << "Failed to initialize GLFW" << std::endl;
-		return -1;
+		exit(EXIT_FAILURE);
 	}
 
     // load images
-    ImageRGB foreground = read_bmp_image("../images/input-2.bmp");    // TODO: must be set from the command line
-    ImageRGB background = read_bmp_image("../images/background.bmp");    // TODO: must be set from the command line
+    ImageRGB foreground = read_bmp_image("../images/input-2.bmp", 10, 10);    // TODO: must be set from the command line
+    ImageRGB background = read_bmp_image("../images/background.bmp", 10, 10);    // TODO: must be set from the command line
 
 
     // check whether images have the same size
@@ -33,12 +33,12 @@ int main(int argc, char *argv[])
     }
 
     // display images
-    //display_window(foreground);
-    //display_window(background);
+    display_window(foreground);
+    display_window(background);
 
-    ImageRGB output = apply_default_ck(foreground, background);
+    //ImageRGB output = apply_default_ck(foreground, background);
     //ImageRGB output = apply_openmp_ck(foreground, background);
-    //ImageRGB output = apply_simd_intrinsics_ck(foreground, background);
+    ImageRGB output = apply_simd_intrinsics_ck(foreground, background);
     display_window(output);
 
 	// Terminate GLFW

@@ -21,7 +21,7 @@ void report_error(const char* file, size_t string_number) {
  * 
  * @param path a relative location of an image
  */
-ImageRGB read_bmp_image(std::string path) {
+ImageRGB read_bmp_image(std::string path, size_t pad_x, size_t pad_y) {
 
     // open a file
     std::fstream file(path.c_str(), std::ios_base::in | std::ios::binary);
@@ -64,7 +64,7 @@ ImageRGB read_bmp_image(std::string path) {
     const unsigned height = *reinterpret_cast<unsigned*>(header + 22);
     const unsigned width = *reinterpret_cast<unsigned*>(header + 18);
     const unsigned padded_width = image_size / (3 * height);
-    ImageRGB image(height, width, padded_width);
+    ImageRGB image(width, height, pad_x, pad_y);
 
     // allocate arrays for each channel 
     float *red = image.get_red();
@@ -84,17 +84,22 @@ ImageRGB read_bmp_image(std::string path) {
     file.close(); 
 
     // read data from each channel
-    for (size_t bmp_index = 0, rgb_index = 0; bmp_index < pixel_array_size; bmp_index += 3, ++rgb_index) {
-        blue[rgb_index] = float(pixel_array[bmp_index]) / 255.0;
-        green[rgb_index] = float(pixel_array[bmp_index + 1]) / 255.0;
-        red[rgb_index] = float(pixel_array[bmp_index + 2]) / 255.0;
+    for(size_t y = 0; y < height; ++ y) {
+        for(size_t x = 0; x < width; ++x) {
+            const size_t data_index = ImageRGB::num_channels * (x + y * padded_width);
+            const size_t image_index = image.get_index(x, y);
+
+            blue[image_index] = float(pixel_array[data_index]) / 255.0f;
+            green[image_index] = float(pixel_array[data_index + 1]) / 255.0f;
+            red[image_index] = float(pixel_array[data_index + 2]) / 255.0f;
+        }
     }
 
 
 #ifdef DEBUG
     std::cout << "offset to PixelArray: " << pixel_array_offset << std::endl;
     std::cout << "image width: " << image.get_width() << std::endl;
-    std::cout << "padded width: " << image.get_padded_width() << std::endl;
+    std::cout << "padded width: " << padded_width << std::endl;
     std::cout << "image height: " << image.get_height() << std::endl;
     std::cout << "image size: " << image_size << std::endl;
     std::cout << "color planes: " << *reinterpret_cast<short*>(header + 26) << std::endl;
@@ -116,7 +121,7 @@ ImageRGB read_bmp_image(std::string path) {
 void display_window(ImageRGB &image) {
     GLFWwindow* window;
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-	window = glfwCreateWindow(image.get_width(), image.get_height(), "image", NULL, NULL );
+	window = glfwCreateWindow(image.get_pad_width(), image.get_pad_height(), "image", NULL, NULL );
 	if (!window)
 	{
 		std::cout << "Failed to open GLFW window" << std::endl;
@@ -129,11 +134,11 @@ void display_window(ImageRGB &image) {
 	glfwSwapInterval(1);
 
 	// set up view
-	glViewport(0, 0, image.get_width(), image.get_height());
+	glViewport(0, 0, image.get_pad_width(), image.get_pad_height());
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	glOrtho(0.0, image.get_width(), 0.0, image.get_height(), 0.0, 1.0); // this creates a canvas you can do 2D drawing on
+	glOrtho(0.0, image.get_pad_width(), 0.0, image.get_pad_height(), 0.0, 1.0); // this creates a canvas you can do 2D drawing on
 
 
 	// Main loop
@@ -143,11 +148,10 @@ void display_window(ImageRGB &image) {
 		//render_loop();
         float *channels[ImageRGB::num_channels] = {image.get_red(), image.get_green(), image.get_blue()};
         glBegin(GL_POINTS);
-        for (int y = 0; y < image.get_height(); ++y) {
-            for (int x = 0; x < image.get_width(); ++x) {
-                size_t index = image.get_index(x, y);
+        for (int y = 0; y < image.get_pad_height(); ++y) {
+            for (int x = 0; x < image.get_pad_width(); ++x) {
+                size_t index = image.get_real_index(x, y);
                 glColor3f(channels[0][index], channels[1][index], channels[2][index]);
-                //glColor3f(0.0, 0.0, image.blue[index]);
                 glVertex2f(x, y);
             }
         }
