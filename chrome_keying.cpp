@@ -7,9 +7,9 @@
 
 using namespace std::chrono; 
 
-
+namespace keying {
 //******************************************************************************
-void apply_default_ck(ImageRGB &fg, ImageRGB &output) {
+void apply_default(ImageRGB &fg, ImageRGB &output) {
     
     float *output_channels[ImageRGB::num_channels] = {output.get_red(), output.get_green(), output.get_blue()};
     float *fg_channels[ImageRGB::num_channels] = {fg.get_red(), fg.get_green(), fg.get_blue()};
@@ -38,7 +38,7 @@ void apply_default_ck(ImageRGB &fg, ImageRGB &output) {
 
 
 //******************************************************************************
-void apply_openmp_ck(ImageRGB &fg, ImageRGB &output) {
+void apply_openmp(ImageRGB &fg, ImageRGB &output) {
     
     float *output_channels[ImageRGB::num_channels] = {output.get_red(), output.get_green(), output.get_blue()};
     float *fg_channels[ImageRGB::num_channels] = {fg.get_red(), fg.get_green(), fg.get_blue()};
@@ -72,7 +72,7 @@ void apply_openmp_ck(ImageRGB &fg, ImageRGB &output) {
 
 
 //******************************************************************************
-void apply_simd_intrinsics_ck(ImageRGB &fg, ImageRGB &output) {
+void apply_simd_intrinsics(ImageRGB &fg, ImageRGB &output) {
     
     float *output_channels[ImageRGB::num_channels] = {output.get_red(), output.get_green(), output.get_blue()};
     float *fg_channels[ImageRGB::num_channels] = {fg.get_red(), fg.get_green(), fg.get_blue()};
@@ -114,4 +114,5 @@ void apply_simd_intrinsics_ck(ImageRGB &fg, ImageRGB &output) {
     auto end = std::chrono::system_clock::now();
     duration<double> elapse_time = end - start;
     std::cout << "time spent: " << elapse_time.count() << ", sec" << std::endl;
+}
 }

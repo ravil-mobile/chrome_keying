@@ -11,5 +11,5 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}
 
 
 add_executable(keying main.cpp helper.cpp chrome_keying.cpp convolution.cpp)
-target_compile_options(keying PUBLIC "-O2" "-mavx")
+target_compile_options(keying PUBLIC "-O2" "-march=native")
 target_link_libraries(keying -lglfw -lGL)
