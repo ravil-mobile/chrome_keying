@@ -1,3 +1,6 @@
+#ifndef _FILTER_H_
+#define _FILTER_H_
+
 #include <stdlib.h>
 #include <cstring>
 #include <assert.h>
@@ -5,8 +8,6 @@
 
 #include "alignment.h"
 
-#ifndef _FILTER_H_
-#define _FILTER_H_
 
 /**TODO: document the code
  * 

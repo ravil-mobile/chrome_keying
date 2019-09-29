@@ -86,13 +86,13 @@ namespace conv {
         CommandLineSettings* settings = CommandLineSettings::get_settings();
 
         auto start = system_clock::now();
+        
         // allocate registers to hold filters
         __m256 kernels[k_total_size];
         
         // load kernels to registers
-        const float *k_data = filter.get_data();
         for (unsigned i = 0; i < k_total_size; ++i) {
-            kernels[i] = _mm256_broadcast_ss(k_data + i);
+            kernels[i] = _mm256_broadcast_ss(filter_data + i);
         }
 
         __m256 tmp_output;
@@ -109,11 +109,6 @@ namespace conv {
                             for (int xx = -k_half_width; xx <= k_half_width; ++xx) {
                                 __m256 stripe = _mm256_loadu_ps(&i_channels[channel][input.get_index(x + xx, y + yy)]);
                                 tmp_output = _mm256_fmadd_ps(stripe, kernels[counter], tmp_output);
-                                
-                                /*
-                                __m256 tmp = _mm256_mul_ps(stripe, kernels[counter]);
-                                tmp_output = _mm256_add_ps(tmp_output, tmp);
-                                */
                                 ++counter;
                             }
                         }

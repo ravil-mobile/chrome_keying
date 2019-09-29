@@ -1,10 +1,11 @@
 
+#ifndef _CHROME_KEYING_H_
+#define _CHROME_KEYING_H_
+
 #include "helper.h"
 #include "image.h"
 #include "filter.h"
 
-#ifndef _CHROME_KEYING_H_
-#define _CHROME_KEYING_H_
 
 namespace keying {
     void apply_default(ImageRGB &fg, ImageRGB &output);
