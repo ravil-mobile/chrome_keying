@@ -37,9 +37,16 @@ target_link_libraries(${mm_simd_target} ${common_target} ${Boost_LIBRARIES})
 set(mm_opencl_target "mm_opencl")
 set(mm_opencl_dir "opencl")
 
+#find_package(Opencl REQUIRED)
+
 add_executable(${mm_opencl_target} ${mm_opencl_dir}/main.cpp
-                                   ${mm_opencl_dir}/compute_kernels.cpp)
+                                   ${mm_opencl_dir}/compute_kernels.cpp
+                                   ${mm_opencl_dir}/device_setup.cpp
+                                   ${mm_opencl_dir}/opencl_helper.cpp)
                                    
-target_include_directories(${mm_opencl_target} PUBLIC ${common_dir} ${Boost_INCLUDE_DIR})
+target_include_directories(${mm_opencl_target} PUBLIC ${common_dir} 
+                                                      ${Boost_INCLUDE_DIR}})
 target_compile_options(${mm_opencl_target} PUBLIC "-g")
-target_link_libraries(${mm_opencl_target} ${common_target} ${Boost_LIBRARIES})
+target_link_libraries(${mm_opencl_target} ${common_target} 
+                                          ${Boost_LIBRARIES}
+                                          -lOpenCL)

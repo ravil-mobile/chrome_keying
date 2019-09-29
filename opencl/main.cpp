@@ -9,6 +9,7 @@ namespace po = boost::program_options;
 #include "filter.h"
 #include "compute_kernels.h"
 #include "compute_kernels_default.h"
+#include "device_setup.h"
 
 #include "program_title.h"
 
@@ -29,7 +30,7 @@ int main(int argc, char *argv[])
             ("width,m", po::value<unsigned>()->default_value(3), "width of gaussian filter")
             ("height,k", po::value<unsigned>()->default_value(3), "height of gaussian filter")
             ("repeats,r", po::value<unsigned>()->default_value(720), "number of repeats to measure performance")
-            ("platform,p", po::value<std::string>()->default_value("intel gpu"), "platform name: intel gpu, nvidia")
+            ("platform,p", po::value<std::string>()->default_value("nvidia"), "platform name (regex): intel gpu, nvidia")
             ("mode", po::value<std::string>()->default_value("default"), "modes: default, opencl")
         ;
 
@@ -87,6 +88,7 @@ int main(int argc, char *argv[])
 
 
     Graphics *graphics = Graphics::init_graphics();
+    DeviceSetup::init_device();  // <-- find and init an OpenCL device
 
     // display images
 #ifdef DEBUG  //DEBUGGING
@@ -97,6 +99,7 @@ int main(int argc, char *argv[])
     ImageRGB chrome_keying_output(background);
     ImageRGB convolution_output(background);
 
+    //execute kernels
     std::string mode(map["mode"].as<std::string>());
     mode = "opencl"; // DEBUGGING
     if(!mode.compare(std::string("default"))) {
@@ -112,7 +115,9 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE); 
     }
 
-    graphics->display_window(chrome_keying_output);
+    //graphics->display_window(chrome_keying_output);
     // graphics->display_window(convolution_output); //DEBUGGING
+
+    DeviceSetup::close_device();
 	return 0;
 }
