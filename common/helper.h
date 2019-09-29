@@ -22,8 +22,6 @@ class Graphics {
 
     private:
     Graphics();
-    Graphics(const Graphics& other) {}
-    Graphics& operator=(const Graphics& other) {}
     
     std::vector<void *> m_windows{};
     static Graphics *m_instance;
@@ -44,6 +42,7 @@ public:
 
     size_t get_num_repeats() {return m_num_repeats;}
     float get_ck_threshold() {return m_ck_threshold;}
+    std::string get_platform_name() {return m_platform_name;}
 
     static CommandLineSettings* get_settings() {
         assert((m_isntance != nullptr) && ("the has not been initialized"));
@@ -62,9 +61,6 @@ private:
                         std::string platform_name = "") : m_num_repeats(repeats), 
                                                           m_ck_threshold(threshold),
                                                           m_platform_name(platform_name) {}
-
-    CommandLineSettings(const CommandLineSettings& other) {}
-    CommandLineSettings& operator=(const CommandLineSettings& other) {return *this;}
 
     size_t m_num_repeats;
     float m_ck_threshold;
