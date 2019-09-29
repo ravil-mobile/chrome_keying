@@ -116,11 +116,37 @@ ImageRGB read_bmp_image(std::string path, size_t pad_x, size_t pad_y) {
 
 
 
+
+Graphics *Graphics::m_instance = nullptr;
+Graphics* Graphics::init_graphics() {
+    if (m_instance == nullptr) {
+        m_instance = new Graphics();
+    }
+    return m_instance;
+}
+
+Graphics::Graphics() {
+    if(!glfwInit()){
+		std::cout << "Failed to initialize GLFW" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+}
+
+Graphics::~Graphics() {
+    if (m_instance != nullptr) {
+        for (auto win_ptr = m_windows.begin(); win_ptr < m_windows.end(); ++win_ptr) {
+            glfwDestroyWindow(reinterpret_cast<GLFWwindow*>(*win_ptr));
+        }
+        glfwTerminate();
+        delete m_instance;
+    }
+}
+
 /** displays a given image
  * TODO: complete
  * 
  */
-void display_window(ImageRGB &image) {
+void Graphics::display_window(ImageRGB &image) {
     GLFWwindow* window;
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 	window = glfwCreateWindow(image.get_pad_width(), image.get_pad_height(), "image", NULL, NULL );
@@ -140,14 +166,12 @@ void display_window(ImageRGB &image) {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	glOrtho(0.0, image.get_pad_width(), 0.0, image.get_pad_height(), 0.0, 1.0); // this creates a canvas you can do 2D drawing on
+	glOrtho(0.0, image.get_pad_width(), 0.0, image.get_pad_height(), 0.0, 1.0);
 
 
 	// Main loop
 	while(!glfwWindowShouldClose(window))
 	{
-		// Draw gears
-		//render_loop();
         float *channels[ImageRGB::num_channels] = {image.get_red(), image.get_green(), image.get_blue()};
         glBegin(GL_POINTS);
         for (int y = 0; y < image.get_pad_height(); ++y) {
@@ -164,8 +188,5 @@ void display_window(ImageRGB &image) {
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-
-    //DEBUGGING
-    //glfwDestroyWindow(window);
-
+    m_windows.push_back(reinterpret_cast<void *>(window));
 }

@@ -1,4 +1,5 @@
 #include <string>
+#include <vector>
 #include <assert.h>
 #include "image.h"
 
@@ -9,8 +10,26 @@
 
 void report_error(const char* file, size_t string_number);
 ImageRGB read_bmp_image(std::string path, size_t pad_x = 0, size_t pad_y = 0);
-void display_window(ImageRGB &image);
 enum COLORS {RED=0, GREEN=1, BLUE=2};
+
+
+class Graphics {
+    public:
+    ~Graphics();
+    
+    static Graphics* init_graphics();
+    void display_window(ImageRGB &image);
+
+    private:
+    Graphics();
+    Graphics(const Graphics& other) {}
+    Graphics& operator=(const Graphics& other) {}
+    
+    std::vector<void *> m_windows{};
+    static Graphics *m_instance;
+};
+
+
 
 
 /** TODO: add description
@@ -31,21 +50,25 @@ public:
         return m_isntance;
     }
 
-    static void init(size_t repeats, float threshold) {
+    static void init(size_t repeats, float threshold, std::string platform_name = "") {
         if (m_isntance == nullptr) {
-            m_isntance = new CommandLineSettings(repeats, threshold);
+            m_isntance = new CommandLineSettings(repeats, threshold, platform_name);
         }
     }
 
 private:
-    CommandLineSettings(size_t repeats, float threshold) : m_num_repeats(repeats), 
-                                                           m_ck_threshold(threshold) {}
+    CommandLineSettings(size_t repeats,
+                        float threshold,
+                        std::string platform_name = "") : m_num_repeats(repeats), 
+                                                          m_ck_threshold(threshold),
+                                                          m_platform_name(platform_name) {}
 
     CommandLineSettings(const CommandLineSettings& other) {}
     CommandLineSettings& operator=(const CommandLineSettings& other) {return *this;}
 
     size_t m_num_repeats;
     float m_ck_threshold;
+    std::string m_platform_name{};  // <-- valid only for OpenCL example
     static CommandLineSettings* m_isntance;
 };
 

@@ -1,9 +1,6 @@
 #include <iostream>
 #include <string>
 
-#include <GLFW/glfw3.h>
-#include <GL/gl.h>
-
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 
@@ -11,7 +8,9 @@ namespace po = boost::program_options;
 #include "image.h"
 #include "filter.h"
 #include "compute_kernels.h"
+#include "compute_kernels_default.h"
 
+#include "program_title.h"
 
 int main(int argc, char *argv[])
 {
@@ -19,18 +18,19 @@ int main(int argc, char *argv[])
     try
     {
 
-        po::options_description desc("Program options");
+        po::options_description desc(TITLE);
         
         // define command line options
         desc.add_options()
             ("help,h", "print program description")
             ("input,i", po::value<std::string>()->default_value("../images/input-2.bmp"), "path to an input image")
-            ("backgound,b", po::value<std::string>()->default_value("../images/background.bmp"), "path to an background image")
+            ("backgound,b", po::value<std::string>()->default_value("../images/background.bmp"), "path to n background image")
             ("threshold,t", po::value<float>()->default_value(0.25), "chrome keying sensetivity")
-            ("width,m", po::value<unsigned>()->default_value(3), "gaussian filter width")
-            ("height,k", po::value<unsigned>()->default_value(3), "gaussian filter height")
+            ("width,m", po::value<unsigned>()->default_value(3), "width of gaussian filter")
+            ("height,k", po::value<unsigned>()->default_value(3), "height of gaussian filter")
             ("repeats,r", po::value<unsigned>()->default_value(720), "number of repeats to measure performance")
-            ("mode", po::value<std::string>()->default_value("default"), "modes: default, openmp, intrinsics")
+            ("platform,p", po::value<std::string>()->default_value("intel gpu"), "platform name: intel gpu, nvidia")
+            ("mode", po::value<std::string>()->default_value("default"), "modes: default, opencl")
         ;
 
         // parse command line
@@ -49,10 +49,12 @@ int main(int argc, char *argv[])
         std::cout << "kernel width: " << map["width"].as<unsigned>() << std::endl;
         std::cout << "kernel height: " << map["height"].as<unsigned>() << std::endl;
         std::cout << "num repeats: " << map["repeats"].as<unsigned>() << std::endl;
+        std::cout << "target platform: " << map["platform"].as<std::string>() << std::endl;
         std::cout << "mode: " << map["mode"].as<std::string>() << std::endl;
         std::cout << std::string(70, '-') << std::endl << std::endl;
 
     } catch(const po::error err) {
+        std::cout << "ERROR: during command line parsing. Please, read the documentation (--help)" << std::endl;
         std::cout << err.what() << std::endl;
         exit(EXIT_FAILURE); 
     }
@@ -61,7 +63,9 @@ int main(int argc, char *argv[])
     filter.init_with_gaussian();
 
 
-    CommandLineSettings::init(map["repeats"].as<unsigned>(), map["threshold"].as<float>());
+    CommandLineSettings::init(map["repeats"].as<unsigned>(), 
+                              map["threshold"].as<float>(),
+                              map["platform"].as<std::string>());
 
     // load images
     ImageRGB foreground = read_bmp_image(map["input"].as<std::string>(), 
@@ -82,46 +86,33 @@ int main(int argc, char *argv[])
     }
 
 
-    // init OpenGL to render graphics 
-	if(!glfwInit()){
-		std::cout << "Failed to initialize GLFW" << std::endl;
-		exit(EXIT_FAILURE);
-	}
-
+    Graphics *graphics = Graphics::init_graphics();
 
     // display images
-#ifndef DEBUG
-    display_window(foreground);
-    display_window(background);
+#ifdef DEBUG  //DEBUGGING
+    graphics->display_window(foreground);
+    graphics->display_window(background);
 #endif
 
     ImageRGB chrome_keying_output(background);
     ImageRGB convolution_output(background);
 
     std::string mode(map["mode"].as<std::string>());
+    mode = "opencl"; // DEBUGGING
     if(!mode.compare(std::string("default"))) {
         keying::apply_default(foreground, chrome_keying_output);
         conv::apply_default(chrome_keying_output, filter, convolution_output);
     }
-    else if(!mode.compare(std::string("openmp"))) {
-        keying::apply_openmp(foreground, chrome_keying_output);
-        // TODO: conv::apply_openmp(chrome_keying_output, filter, convolution_output);
-    }
-    else if (!mode.compare(std::string("intrinsics"))) {
-        keying::apply_simd_intrinsics(foreground, chrome_keying_output);
-        conv::apply_simd_intrinsics(chrome_keying_output, filter, convolution_output);
+    else if(!mode.compare(std::string("opencl"))) {
+        keying::apply_opencl(foreground, chrome_keying_output);
+        conv::apply_opencl(chrome_keying_output, filter, convolution_output);
     }
     else {
-        std::cout << "ERROR: unknwon mode. Please, see the documentation (--help)" << std::endl;
+        std::cout << "ERROR: unknwon mode. Please, read the documentation (--help)" << std::endl;
         exit(EXIT_FAILURE); 
     }
 
-
-    display_window(chrome_keying_output);
-    display_window(convolution_output);
-
-	// Terminate OpenGL
-	glfwTerminate();
-
+    graphics->display_window(chrome_keying_output);
+    // graphics->display_window(convolution_output); //DEBUGGING
 	return 0;
 }
