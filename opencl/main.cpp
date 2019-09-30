@@ -117,5 +117,7 @@ int main(int argc, char *argv[])
 
     //graphics->display_window(chrome_keying_output);
     // graphics->display_window(convolution_output); //DEBUGGING
+
+    DeviceSetup::close_device();
 	return 0;
 }

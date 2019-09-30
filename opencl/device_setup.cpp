@@ -20,7 +20,9 @@ void DeviceSetup::init_device() {
 }
 
 
-DeviceSetup::DeviceSetup() : m_device_ptr(nullptr) {
+DeviceSetup::DeviceSetup() : m_device_ptr(nullptr),
+                             m_context_ptr(nullptr),
+                             m_program_ptr(nullptr) {
 
     cl_status = 0;
 
@@ -60,10 +62,12 @@ DeviceSetup::DeviceSetup() : m_device_ptr(nullptr) {
     }
 
     // store the first device of the target platform for the subsequent usage
-    m_device_ptr = reinterpret_cast<void*>(new cl::Device(devices[0]));
+    cl::Device *target_defice = new cl::Device(devices[0]);
+    m_device_ptr = reinterpret_cast<void*>(target_defice);
     
     // create an OpenCL context for the first device
-    cl::Context context(devices[0], NULL, NULL, NULL, &cl_status);  CL_CHECK;
+    cl::Context *target_context = new cl::Context(*target_defice, NULL, NULL, NULL, &cl_status);  CL_CHECK;
+    m_context_ptr = reinterpret_cast<void*>(target_context);
 
 
     // open and read a text file with opencl kernels
@@ -94,25 +98,53 @@ DeviceSetup::DeviceSetup() : m_device_ptr(nullptr) {
     }
 
     // compile opencl kernels (JIT)
-    cl::Program program(context, source_code, &cl_status); CL_CHECK;
-    cl_status = program.build(devices, NULL, NULL, NULL); CL_CHECK;
+    cl::Program *target_program = new cl::Program(*target_context, source_code, &cl_status); CL_CHECK;
+    m_program_ptr = reinterpret_cast<void*>(target_program);
+    cl_status = target_program->build(NULL, NULL, NULL); CL_CHECK;
 
     // check compilation log
     if (cl_status != CL_SUCCESS) { 
-        std::cout << program.getBuildInfo(devices[0], CL_PROGRAM_BUILD_LOG, &cl_status) << std::endl; CL_CHECK;
+        std::cout << target_program->getBuildInfo(*target_defice, CL_PROGRAM_BUILD_LOG, &cl_status) << std::endl;
+        CL_CHECK;
     }
 
+    std::cout << "getting resources" << std::endl;
     // TODO: continue...
 }
 
-
-DeviceSetup::~DeviceSetup() {
+void DeviceSetup::close_device() {
     if (m_setup != nullptr)  {
+
+        delete reinterpret_cast<cl::Context*>(m_setup->m_context_ptr);
+        //delete reinterpret_cast<cl::Program*>(m_setup->m_program_ptr);
+        delete reinterpret_cast<cl::Device*>(m_setup->m_device_ptr);
+        std::cout << "OpenCL Device resources  FREE" << std::endl;
         delete m_setup;
-        delete reinterpret_cast<cl::Device*>(m_device_ptr);
     }
 }
 
-unsigned int DeviceSetup::getDevice() {
-    return 0;
+DeviceSetup::~DeviceSetup() {
+
+}
+
+
+const void* DeviceSetup::get_device_ptr() {
+    if (m_setup != nullptr)
+        return m_setup->m_device_ptr;
+    else
+        std::cout << "ERROR: Device has not been set up\n";
+}
+
+const void* DeviceSetup::get_context_ptr() {
+    if (m_setup != nullptr)
+        return m_setup->m_context_ptr;
+    else
+        std::cout << "ERROR: Device has not been set up\n";
+}
+
+const void* DeviceSetup::get_program_ptr() {
+    if (m_setup != nullptr)
+        return m_setup->m_program_ptr;
+    else
+        std::cout << "ERROR: Device has not been set up\n";
 }

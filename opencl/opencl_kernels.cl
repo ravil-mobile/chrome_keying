@@ -19,5 +19,8 @@ __kernel void mult_vectors(__global float* a,
     int idx = get_global_id(0);
     if (idx < num_elements)
         c[idx] = a[idx] * b[idx];
+<<<<<<< HEAD
 
+=======
+>>>>>>> b4007119565a0116adff0f99a6eda02bd6d06b94
 }
