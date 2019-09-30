@@ -37,7 +37,7 @@ namespace conv {
       
         CommandLineSettings* settings = CommandLineSettings::get_settings();
 
-        auto start = system_clock::now();
+        auto start = steady_clock::now();
         
         // allocate registers to hold filters
         __m256 kernels[k_total_size];
@@ -52,7 +52,7 @@ namespace conv {
         for (size_t repeat = 0; repeat < settings->get_num_repeats(); ++repeat) {
             for (size_t channel = 0; channel < ImageRGB::num_channels; ++channel) {
             
-                for (size_t y = 0; y < input.get_height(); ++y ) {
+                for (size_t y = 0; y < input.get_height(); ++y) {
                     for (size_t x = 0; x < input.get_width(); x += register_length) {
 
                         tmp_output = _mm256_set1_ps(0.0f);
@@ -70,7 +70,7 @@ namespace conv {
             }
         }
         
-        auto end = std::chrono::system_clock::now();
+        auto end = steady_clock::now();
         duration<double> elapse_time = end - start;
         std::cout << "time spent: " << elapse_time.count() << ", sec" << std::endl;
     }

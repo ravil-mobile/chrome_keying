@@ -50,3 +50,8 @@ target_compile_options(${mm_opencl_target} PUBLIC "-g")
 target_link_libraries(${mm_opencl_target} ${common_target} 
                                           ${Boost_LIBRARIES}
                                           -lOpenCL)
+
+option(opencl_conv_adv "enable opencl shared and const mem. for convolution kernel" OFF)
+if (${opencl_conv_adv})
+    target_compile_definitions(${mm_opencl_target} PRIVATE "SR_MEM")
+endif()

@@ -62,14 +62,14 @@ DeviceSetup::DeviceSetup() : m_device_ptr(nullptr),
     }
 
     // store the first device of the target platform for the subsequent usage
-    cl::Device *target_defice = new cl::Device(devices[0]);
-    m_device_ptr = reinterpret_cast<void*>(target_defice);
+    cl::Device *target_device = new cl::Device(devices[0]);
+    m_device_ptr = reinterpret_cast<void*>(target_device);
     
     // create an OpenCL context for the first device
-    cl::Context *target_context = new cl::Context(*target_defice, NULL, NULL, NULL, &cl_status);  CL_CHECK;
+    cl::Context *target_context = new cl::Context(*target_device, NULL, NULL, NULL, &cl_status);  CL_CHECK;
     m_context_ptr = reinterpret_cast<void*>(target_context);
 
-
+  
     // open and read a text file with opencl kernels
     std::string source_code;
     {
@@ -87,29 +87,33 @@ DeviceSetup::DeviceSetup() : m_device_ptr(nullptr),
         size_t file_length = file.tellg();
         file.seekg(0, file.beg);
 
+        
         // read file content
         char *content = new char[file_length + 1];
         file.read(content, file_length);
-        content[file_length + 1] = '\0';
+        content[file_length] = '\0';
         file.close();
 
         // put the content to a string
         source_code = content;
     }
 
+  
     // compile opencl kernels (JIT)
     cl::Program *target_program = new cl::Program(*target_context, source_code, &cl_status); CL_CHECK;
     m_program_ptr = reinterpret_cast<void*>(target_program);
-    cl_status = target_program->build(NULL, NULL, NULL); CL_CHECK;
+    cl_status = target_program->build("-Werror", NULL, NULL);
 
     // check compilation log
-    if (cl_status != CL_SUCCESS) { 
-        std::cout << target_program->getBuildInfo(*target_defice, CL_PROGRAM_BUILD_LOG, &cl_status) << std::endl;
+    if (cl_status != CL_SUCCESS) {
+        std::cout << "ERROR: OpenCL JIT compilation error:" << std::endl;
+        std::cout << target_program->getBuildInfo<CL_PROGRAM_BUILD_LOG>(*target_device, &cl_status) << std::endl;
         CL_CHECK;
     }
 
     std::cout << "getting resources" << std::endl;
     // TODO: continue...
+    
 }
 
 void DeviceSetup::close_device() {

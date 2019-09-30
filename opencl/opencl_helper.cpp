@@ -10,6 +10,10 @@ void check_error_code(cl_int status, std::string file_name, size_t string_number
 	}
 }
 
+unsigned cl_norm_size(const unsigned size, const unsigned batch) {
+    return ((size / batch) + 1) * batch;
+}
+
 
 const char *getErrorString(cl_int error) {
 switch(error){

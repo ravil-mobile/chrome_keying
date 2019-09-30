@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
         // define command line options
         desc.add_options()
             ("help,h", "print program description")
-            ("input,i", po::value<std::string>()->default_value("../images/input-2.bmp"), "path to an input image")
+            ("input,i", po::value<std::string>()->default_value("../images/input-1.bmp"), "path to an input image")
             ("backgound,b", po::value<std::string>()->default_value("../images/background.bmp"), "path to n background image")
             ("threshold,t", po::value<float>()->default_value(0.25), "chrome keying sensetivity")
             ("width,m", po::value<unsigned>()->default_value(3), "width of gaussian filter")
@@ -115,8 +115,9 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE); 
     }
 
-    //graphics->display_window(chrome_keying_output);
-    // graphics->display_window(convolution_output); //DEBUGGING
+
+    graphics->display_window(chrome_keying_output);
+    graphics->display_window(convolution_output); //DEBUGGING
 
     DeviceSetup::close_device();
 	return 0;
